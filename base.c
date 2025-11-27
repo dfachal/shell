@@ -139,12 +139,10 @@ void cAuthors(char *pieces[], int numP){
 	if(n==true){
 		printf("\n");
 		printf("%28s","Daniel Arias Fachal");
-		//printf("%28s","Guillermo Casas García");
 	}
 	if(l==true){
 		printf("\n");
 		printf("%28s","d.fachal");
-		//printf("%28s","guillermo.casas\n");
 	}
 }
 
