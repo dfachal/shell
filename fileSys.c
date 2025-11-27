@@ -1,0 +1,539 @@
+//Daniel Arias Fachal | d.fachal@udc.es / daniel02af@outlook.com
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+#include <time.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <math.h>
+#include <linux/limits.h>
+#include <sys/utsname.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <dirent.h>
+#include "fileSys.h"
+#include "base.h"
+
+
+
+	// * * * Auxiliary function headers
+
+// * Auxiliaries for cListFile
+char LetraTF (mode_t m);
+char * ConvierteModo2 (mode_t m);
+
+char* concat(const char *s1, const char *s2, bool *check);
+
+void fileInfoHeader(bool acc, bool lng, bool lnk);
+void fileInfo(char fileName[], char relPath[], bool acc, bool lng, bool lnk);
+
+void readDir(char dirName[], bool hid, bool acc, bool lng, bool lnk);
+void readDirRec(char dirName[], bool hid, bool acc, bool lng, bool lnk, bool after);
+
+bool delRec(char path[]);
+
+	// * * * Implementation
+
+//function provided in help code:
+char LetraTF (mode_t m){
+     switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
+        case S_IFSOCK: return 's'; /*socket */
+        case S_IFLNK: return 'l'; /*symbolic link*/
+        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFBLK: return 'b'; /*block device*/
+        case S_IFDIR: return 'd'; /*directorio */ 
+        case S_IFCHR: return 'c'; /*char device*/
+        case S_IFIFO: return 'p'; /*pipe*/
+        default: return '?'; /*desconocido, no deberia aparecer*/
+     }
+}
+
+
+//function provided in help code:
+char * ConvierteModo2 (mode_t m){
+    static char permisos[12];
+    strcpy (permisos,"---------- ");
+    
+    permisos[0]=LetraTF(m);
+    if (m&S_IRUSR) permisos[1]='r';    /*propietario*/
+    if (m&S_IWUSR) permisos[2]='w';
+    if (m&S_IXUSR) permisos[3]='x';
+    if (m&S_IRGRP) permisos[4]='r';    /*grupo*/
+    if (m&S_IWGRP) permisos[5]='w';
+    if (m&S_IXGRP) permisos[6]='x';
+    if (m&S_IROTH) permisos[7]='r';    /*resto*/
+    if (m&S_IWOTH) permisos[8]='w';
+    if (m&S_IXOTH) permisos[9]='x';
+    if (m&S_ISUID) permisos[3]='s';    /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos[6]='s';
+    if (m&S_ISVTX) permisos[9]='t';
+    
+    return permisos;
+}
+
+
+char* concat(const char *s1, const char *s2, bool *check){
+    char *result = malloc(strlen(s1) + strlen(s2) + 2);
+    if(result == NULL){
+    	*check = false;
+    }
+    else{
+		strcpy(result, s1);
+		strcat(result, "/");
+		strcat(result, s2);
+		*check = true;
+    }
+    return result;
+}
+
+
+void fileInfoHeader(bool acc, bool lng, bool lnk){
+	if(acc || lng){
+		printf("%-18s|","LastAccessTime");
+	}
+	printf("%-8s|","Size(B)");
+	if(lng){
+		printf("%-8s|","Inode #");
+		printf("%-12s|","Permissions");
+		printf("%-7s|","UserID");
+		printf("%-7s|","GroupID");
+		printf("%-8s|","# HLinks"); //NUMBER OF HARD LINKS
+	}
+	printf("Name");
+	if(lnk)
+		printf(" -> link");
+	printf("\n");
+}
+
+
+void fileInfo(char fileName[], char relPath[], bool acc, bool lng, bool lnk){
+	//stat call
+	struct stat buff;
+	int check;
+	//permissions
+	char permissions[12];
+	//symlinks
+	char linkPath[PATH_MAX];
+	ssize_t linkPathLen;
+	
+	if(lnk)
+		check = lstat(relPath,&buff);
+	else
+		check = stat(relPath,&buff);
+		
+	if(check == -1){
+		printf("\"%s\"", relPath);
+		errorSyscall("listfile");
+	}
+		
+	else{ //print info of the file
+		strcpy(permissions,ConvierteModo2(buff.st_mode)); //populates permissions var
+		if(acc || lng){
+			printTime(buff.st_atime); //TIME
+			printf(" ");
+		}
+		printf("%8lu ",buff.st_size); //SIZE
+		if(lng){
+			printf("%8lu ",buff.st_ino); //INODE NUMBER
+			printf("%-12s ",permissions); //PERMISSIONS
+			printf("%7u %7u ",buff.st_uid,buff.st_gid); //USER AND GROUP IDs
+			printf("%8lu ",buff.st_nlink); //NUMBER OF HARD LINKS
+		}
+		printf("%-s", fileName); //FILE NAME
+		if(permissions[0] == 'l' && lnk){
+			printf(" -> ");
+			linkPathLen = readlink(relPath, linkPath, sizeof(linkPath) - 1);
+			if(linkPathLen == -1){
+				printf("\n");
+				errorSyscall("listfile {readlink()}");
+			}
+			else{
+				linkPath[linkPathLen] = '\0'; //apparently linkPath doesn't null terminate the string
+				printf("%s",linkPath);
+			}
+		}
+		printf("\n");
+	}
+	
+}
+
+
+void readDir(char dirName[], bool hid, bool acc, bool lng, bool lnk){
+	DIR *dir;
+	struct dirent *entry;
+	char directory[PATH_MAX];
+	char* relPath;
+	bool concatCheck;
+	
+	strcpy(directory,dirName);
+	dir = opendir(directory);
+	if (dir == NULL) {
+		printf("\"%s\"",directory);
+		errorSyscall("listfile");
+	}
+	else{
+		printf("*DIRECTORIO: %s\n",dirName);
+		fileInfoHeader(acc,lng,lnk); //print header with columns
+		while((entry = readdir(dir)) != NULL){ //iterate through all entries
+			if((strcmp(entry->d_name,".") && strcmp(entry->d_name,"..")) && (hid || entry->d_name[0] != '.')){ //discard . and .. as well as hidden files if necessary
+				relPath = concat(dirName,entry->d_name,&concatCheck);
+				if(!concatCheck)
+					errorMallocFailed("readdir");
+				else{
+					fileInfo(entry->d_name,relPath,acc,lng,lnk);
+					free(relPath);
+				}
+			}
+		}
+		closedir(dir); //must close it at the end
+	}
+}
+
+void readDirRec(char dirName[], bool hid, bool acc, bool lng, bool lnk, bool after){
+	DIR *dir;
+	struct dirent *entry;
+	char directory[PATH_MAX];
+	char* relPath;
+	bool concatCheck;
+	bool first = true; //for printing header
+	bool afterAux = after; //will need to keep after intact for recursive calls
+	//for STAT to check if it's file or dir
+	int check;
+	char permissions[12];
+	struct stat buff; 
+	
+	int i; //will iter two times
+	strcpy(directory,dirName);
+	
+	for(i = 0; i < 2; i++){
+		//open directory:
+		dir = opendir(directory);
+		
+		if (dir == NULL) { //
+			printf("\"%s\"",directory);
+			errorSyscall("opendir");
+		}
+		else{
+			if(!afterAux){
+				printf("*DIRECTORIO: %s\n",dirName);
+				while((entry = readdir(dir)) != NULL){ //iterate through all entries
+					if((strcmp(entry->d_name,".") && strcmp(entry->d_name,"..")) && (hid || entry->d_name[0] != '.')){ //discard . and .. as well as hidden files if necessary
+						relPath = concat(dirName,entry->d_name,&concatCheck);
+						if(!concatCheck)
+							errorMallocFailed("recursivelist {concat()}");
+						else{
+							if(first)
+								fileInfoHeader(acc,lng,lnk);
+							first = false;
+							fileInfo(entry->d_name,relPath,acc,lng,lnk);
+							free(relPath);
+						}
+					}
+				}
+				if(!first){
+					first = true;
+					printf("\n");
+				}
+			}
+			else{ //afterAux == true
+				while((entry = readdir(dir)) != NULL){ //iterate through all entries
+					if((strcmp(entry->d_name,".") && strcmp(entry->d_name,"..")) && (hid || entry->d_name[0] != '.')){ //discard . and .. as well as hidden files if necessary
+						relPath = concat(dirName,entry->d_name,&concatCheck);
+						if(!concatCheck)
+							errorMallocFailed("readdir");
+						else{
+							check = lstat(relPath,&buff);
+								
+							if(check == -1){
+								errorFileRead(relPath);
+							}
+							else{ //get permissions
+								strcpy(permissions,ConvierteModo2(buff.st_mode));
+								if(permissions[0] == 'd'){ //if it's a directory, recursive call
+									readDirRec(relPath,hid,acc,lng,lnk,after);
+								}
+							}
+							free(relPath);
+						}
+					}
+				}
+			}
+			closedir(dir); //must close after each iteration
+			afterAux = !after;
+		}
+	}
+}
+
+
+bool delRec(char path[]){
+	DIR *dir;
+	struct dirent *entry;
+	char directory[PATH_MAX];
+	char* relPath;
+	bool concatCheck;
+	bool success = true; //for printing header
+	//for STAT to check if it's file or dir
+	int check;
+	char permissions[12];
+	struct stat buff; 
+	
+	strcpy(directory,path);
+
+	//open directory:
+	dir = opendir(directory);
+	
+	if (dir == NULL) { //
+		printf("\"%s\"",directory);
+		errorSyscall("delrec");
+		success = false;
+	}
+	else{
+		while((entry = readdir(dir)) != NULL){ //iterate through all entries
+			if(strcmp(entry->d_name,".") && strcmp(entry->d_name,"..")){ //discard . and ..
+				relPath = concat(path,entry->d_name,&concatCheck);
+				if(!concatCheck)
+					errorMallocFailed("readdir");
+				else{
+					check = lstat(relPath,&buff);
+						
+					if(check == -1){
+						errorFileRead(relPath);
+					}
+					else{ //get permissions
+						strcpy(permissions,ConvierteModo2(buff.st_mode));
+						if(permissions[0] == 'd'){ //if it's a directory, recursive call
+							success = delRec(relPath);
+						}
+						else{
+							if (remove(relPath) != -1){
+								printf("Eliminado archivo %s\n",relPath);
+							}
+							else if(rmdir(relPath) != -1){
+								printf("Eliminado archivo %s\n",relPath);
+							}
+							else{
+								success = false;
+								printf("%s",relPath);
+								errorSyscall("delrec");
+							}
+						}
+					}
+					free(relPath);
+				}
+			}
+		}
+		closedir(dir);
+		
+		if(success){
+			printf("Eliminados contenidos de %s\n",path);
+			if (remove(path) != -1){
+				printf("Eliminado directorio %s\n",path);
+			}
+			else if(rmdir(path) != -1){
+				printf("Eliminado directorio %s\n",path);
+			}
+			else{
+				success = false;
+				printf("%s",path);
+				errorSyscall("delrec");
+			}
+		}
+	}
+	return success;
+}
+
+
+// * fileSys
+
+void cMakeFile (char *pieces[], int numP){
+	//reference shell calls file creation with permissions 0777 but the resulting file has 0775; the behavior is the same here 
+	int fileDesc = 0;
+	if(numP == 1)
+		printCWD(); //prints current directory if called without the file name argument
+		
+	else if (numP == 2){
+		
+		fileDesc = open(pieces[1], O_APPEND);
+		if(fileDesc != -1){
+			close(fileDesc);
+			errorFileAlreadyExists("makefile",pieces[1]);
+		}
+		else{
+			fileDesc = creat(pieces[1], 0777);
+			if(fileDesc == -1)
+				errorSyscall("makefile");
+			
+			else if(close(fileDesc) != 0)
+				errorSyscall("makefile {close()}");
+		}
+	}
+	
+	else{
+		errorUnknownArgument("makefile");
+		tipFilenameSpaces();
+	}
+}
+
+
+void cMakeDir (char *pieces[], int numP){
+	if (numP == 1)
+		printCWD(); //prints current directory if called without the directory name argument
+
+	else if (numP == 2) {
+		if (mkdir(pieces[1], 0777) != 0){ //0777 es para dar permisos
+			errorSyscall("makedir");
+		}
+	}
+	else{
+		errorUnknownArgument("makedir");
+		tipFilenameSpaces();
+	}
+}
+
+
+void cListFile (char *pieces[], int numP){
+	int i;
+	bool acc = false, lng = false, lnk = false, ctrl = false; //for attribute evaluation
+	
+	for(i = 1; i < numP && ctrl == false; i++){
+		if(!strcmp(pieces[i],"-acc"))
+			acc = true; //show accesstime
+		else if(!strcmp(pieces[i],"-long"))
+			lng = true; //long listing (verbose)
+		else if(!strcmp(pieces[i],"-link"))
+			lnk = true; //show path if it's a symlink
+		else{
+			ctrl = true; //exit for loop
+		}
+	}
+
+	if(!ctrl)
+		printCWD(); //no words in input were something other than attributes; this will print the cwd, as the reference shell does
+	else{
+		//individual file processing
+		fileInfoHeader(acc,lng,lnk); //print header with columns
+		for(--i; i < numP; i++){ //iterate through the words that are not attributes;
+			fileInfo(pieces[i],pieces[i],acc,lng,lnk); //call for processing
+		}
+	}
+}
+
+
+void cCWD (char *pieces[], int numP){
+	if (numP == 1)
+		printCWD();
+	else
+		errorUnknownArgument("cwd");
+}
+
+
+void cListDir (char *pieces[], int numP){
+	int i;
+	bool hid = false, acc = false, lng = false, lnk = false, ctrl = false;
+
+	//for attribute evaluation
+	for(i = 1; i < numP && ctrl == false; i++){
+		if(!strcmp(pieces[i],"-hid"))
+			hid = true; //show accesstime
+		else if(!strcmp(pieces[i],"-acc"))
+			acc = true; //show accesstime
+		else if(!strcmp(pieces[i],"-long"))
+			lng = true; //long listing (verbose)
+		else if(!strcmp(pieces[i],"-link"))
+			lnk = true; //show path if it's a symlink
+		else{
+			ctrl = true; //exit for loop
+		}
+	}
+	
+	if(!ctrl){ //no directories listed, only attributes; will list "." in this case
+		readDir(".",hid,acc,lng,lnk);
+	}
+	else{
+		for(--i; i < numP; i++){ //iterate through the words that are not attributes
+			readDir(pieces[i],hid,acc,lng,lnk); //call for processing
+		}
+	}
+}
+
+
+void cRecList (char *pieces[], int numP, bool after){
+	int i;
+	bool hid = false, acc = false, lng = false, lnk = false, ctrl = false;
+
+	//for attribute evaluation
+	for(i = 1; i < numP && ctrl == false; i++){
+		if(!strcmp(pieces[i],"-hid"))
+			hid = true; //show accesstime
+		else if(!strcmp(pieces[i],"-acc"))
+			acc = true; //show accesstime
+		else if(!strcmp(pieces[i],"-long"))
+			lng = true; //long listing (verbose)
+		else if(!strcmp(pieces[i],"-link"))
+			lnk = true; //show path if it's a symlink
+		else{
+			ctrl = true; //exit for loop
+		}
+	}
+	if(!ctrl){ //no directories listed, only attributes; will list "." in this case
+		readDirRec(".",hid,acc,lng,lnk,after);
+	}
+	else{
+		for(--i; i < numP; i++){ //iterate through the words that are not attributes
+			readDirRec(pieces[i],hid,acc,lng,lnk,after); //call for processing
+		}
+	}
+}
+
+
+void cErase (char *pieces[], int numP){
+	int i;
+	if (numP == 1)
+		printCWD(); //prints current directory if called without the directory name argument
+
+	else{
+		for(i = 1; i < numP; i++){
+			if (remove(pieces[i]) != -1){
+				printf("Eliminado correctamente %s\n",pieces[i]);
+			}
+			else if(rmdir(pieces[i]) != -1){
+				printf("Eliminado correctamente %s\n",pieces[i]);
+			}
+			else{
+				printf("%s",pieces[i]);
+				errorSyscall("erase");
+			}
+		}
+	}
+}
+
+
+void cDelRec (char *pieces[], int numP){
+	int i;
+	if (numP == 1)
+		printCWD(); //prints current directory if called without the directory name argument
+
+	else
+		for(i = 1; i < numP; i++)
+			if(!delRec(pieces[i]))
+				printf("Eliminacion recursiva de %s fallida",pieces[i]);
+}
+
+
+
+	// * * * Errors
+
+// * FileSys Errors
+
+void errorFileAlreadyExists(char command[], char fileName[]){
+	printf("\t%s - Error: No se pudo crear el archivo \"%s\":\nEs posible que el archivo ya exista\n",command,fileName);
+}
+
+void errorFileRead(char relPath[]){
+	printf("\tError %d: No se pudo leer \"%s\":\n%s\n",errno,relPath,strerror(errno));
+}
+
