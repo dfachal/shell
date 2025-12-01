@@ -312,6 +312,10 @@ void cMemFill(char *pieces[], int numP, ML *memList){
 	char *endPtr;
 	void* blockStart;
 	void* blockEnd;
+	if (numP == 1){ //TODO: Fix placement of error out of var declaration
+		errorUnknownArgument("memfill");
+		return;
+	}
 	long unsigned address = strtoul(pieces[1], &endPtr, 16); // Dirección de memoria en hexadecimal
 	int cont = atoi(pieces[2]);  // Cantidad de bytes
 	char ch = pieces[3][0]; // Caracter a intruducir
