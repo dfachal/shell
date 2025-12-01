@@ -329,6 +329,15 @@ void helpDelRec(){
 	printf("If no file or directory name is provided, prints current working directory\n\n");
 }
 
+void helpWastebin(){
+	printf("\t|wastebin [-empty]\n");
+	printf("Shows or deletes wastebin contents\n");
+	printf("\t-empty: Empties wastebin\n\n");
+}
+
+
+// * Memory Help
+
 void helpAllocate(){
 	printf("\t|allocate [-malloc] [N]\n");
 	printf("\t-malloc N: Assigns a space in memory of size N\n");

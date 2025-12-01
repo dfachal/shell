@@ -39,6 +39,7 @@ void helpRecList();
 void helpRevList();
 void helpErase();
 void helpDelRec();
+void helpWastebin();
 
 // * Memory Help
 void helpAllocate();

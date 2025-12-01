@@ -91,7 +91,7 @@ bool processInput(char *pieces[], int numP, char *history[], FL *fileList,ML *me
 	if(!strcmp(pieces[0],"quit")|| !strcmp(pieces[0],"exit")|| !strcmp(pieces[0],"bye")){
 		return true;
 	}
-	//p0
+	//p0 base
 	else if(!strcmp(pieces[0],"authors")){
 		cAuthors(pieces,numP);
 	}
@@ -126,7 +126,7 @@ bool processInput(char *pieces[], int numP, char *history[], FL *fileList,ML *me
 		cHelp(pieces,numP);
 	}
 	
-	//p1
+	//p1 filesys
 	else if(!strcmp(pieces[0],"makefile")){
 		cMakeFile(pieces,numP);
 	}
@@ -154,6 +154,11 @@ bool processInput(char *pieces[], int numP, char *history[], FL *fileList,ML *me
 	else if(!strcmp(pieces[0],"delrec")){
 		cDelRec(pieces,numP);
 	}
+	else if(!strcmp(pieces[0],"wastebin")){
+		cWastebin(pieces,numP);
+	}
+	
+	//p2 memory
 	else if(!strcmp(pieces[0],"allocate")){
 		cAllocate(pieces,numP,memList);
 	}

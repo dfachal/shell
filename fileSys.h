@@ -16,6 +16,7 @@ void cListDir (char *pieces[], int numP);
 void cRecList (char *pieces[], int numP, bool after);
 void cErase (char *pieces[], int numP);
 void cDelRec (char *pieces[], int numP);
+void cWastebin (char *pieces[], int numP);
 
 
 
