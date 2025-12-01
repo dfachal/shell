@@ -19,6 +19,7 @@ void cDelRec (char *pieces[], int numP);
 char *getTrashPath(void); //AUX
 char *getTrashInfoPath(void); //AUX
 void cTrash (char *pieces[], int numP);
+void cFSStats (char *pieces[], int numP);
 
 
 

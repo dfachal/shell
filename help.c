@@ -130,7 +130,7 @@ void printHelp(){
 	"authors","pid","ppid","cd","date",
 	"historic","open","close","dup","infoSys",
 	"makefile","makedir","listfile","cwd","listdir",
-	"ls","reclist","revlist","erase","delrec",
+	"ls","reclist","revlist","erase","delrec","trash","fsstats",
 	//memory
 	"allocate","deallocate","memfill","memdump","memory",
 	"recurse",
