@@ -599,9 +599,6 @@ void cTrash (char *pieces[], int numP){
 }
 
 void cFSStats (char *pieces[], int numP){
-	int i;
-	bool freeSpace = false;
-	bool occupiedSpace = false;
 	FILE* mount;
 	struct mntent* mountedFS;
 	
