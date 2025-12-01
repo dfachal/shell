@@ -612,7 +612,8 @@ void cFSStats (char *pieces[], int numP){
 	}
 	while((mountedFS = getmntent(mount)) != NULL){ //getmntent reads mounts one at a time
 		struct statvfs fsStats; //declared locally within the loop
-		if(statvfs(mountedFS->mnt_dir,&fsStats) == 0){ //ignore filesystems under 8GB
+		//CONDITIONS: Mountsystems must be over 8GB, with at least one byte of free space and not of type "tmpfs" (temporary filesystem)
+		if(statvfs(mountedFS->mnt_dir,&fsStats) == 0){
 			if((fsStats.f_blocks * fsStats.f_bsize > 8000000) && fsStats.f_bfree != 0 && (strcmp(mountedFS->mnt_fsname,"tmpfs"))){
 				printf("Mount point: %s\n", mountedFS->mnt_dir);
 				printf("Filesystem: %s\n", mountedFS->mnt_fsname);
