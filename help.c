@@ -98,6 +98,12 @@ void cHelp(char *pieces[], int numP){
 
 		else if(!strcmp(pieces[1],"delrec"))
 			helpDelRec();
+		
+		else if(!strcmp(pieces[1],"trash"))
+			helpTrash();
+			
+		else if(!strcmp(pieces[1],"fsstats"))
+			helpFSStats();
 			
 		else if(!strcmp(pieces[1],"allocate"))
 			helpAllocate();
@@ -134,6 +140,7 @@ void printHelp(){
 	//memory
 	"allocate","deallocate","memfill","memdump","memory",
 	"recurse",
+	
 	"!"
 	};
 	col = 0;
@@ -336,10 +343,8 @@ void helpTrash(){
 }
 
 void helpFSStats(){
-	printf("\t|fsstats [-free] [-occ]]\n");
-	printf("Shows mounted file systems statistics\n");
-	printf("\t-free: Shows free space\n\n");
-	printf("\t-occ: Shows occupied space\n\n");
+	printf("\t|fsstats\n");
+	printf("Shows mounted file systems statistics, including free and occupied space (in bytes)\n");
 }
 
 
