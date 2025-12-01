@@ -345,10 +345,10 @@ void cInfoSys(char *pieces[], int numP){
 		struct utsname sysInfo;
 		success = uname(&sysInfo);
 		if (success == 0){
-			printf("Nombre del sistema: %s\n", sysInfo.sysname);
-			printf("Nombre de nodo: %s\n", sysInfo.nodename);
-			printf("Release del SO: %s\n", sysInfo.release);
-			printf("Versión del SO: %s\n", sysInfo.version);
+			printf("System name: %s\n", sysInfo.sysname);
+			printf("Node name: %s\n", sysInfo.nodename);
+			printf("OS Release: %s\n", sysInfo.release);
+			printf("OS Version: %s\n", sysInfo.version);
 			printf("HWID: %s\n", sysInfo.machine);
 		}
 		else errorSyscall("infosys");
@@ -492,17 +492,17 @@ void emptyFL(FL *list){
 // * Base errors
 
 void errorUnknownCommand(char command[]){
-	printf("Comando desconocido: %s\nIntroduce 'help' para obtener una lista completa de los comandos disponibles\n",command);
+	printf("Unknown command: %s\tInput 'help' to obtain a full list of all available commands\n",command);
 }
 
 
 void errorAtoiFailed(char command[], char argument[]){ //created for "history" command, might be useful later again
-	printf("\t%s - Error: %s no es un número válido",command,argument);
+	printf("\t%s - Error: %s is not a valid number",command,argument);
 }
 
 
 void errorUnknownArgument(char command[]){ //generic, an argument for a specific command wasn't recognized
-	printf("\t%s - Error: Argumento(s) no válido(s)\n\tIntroduce 'help %s' para vez la lista de argumentos aceptados\n",command,command);
+	printf("\t%s - Error: Argument(s) not valid\n\tInput 'help %s' to see the full list of available arguments\n",command,command);
 }
 
 
@@ -512,7 +512,7 @@ void errorFatal(char command[]){ //this should NEVER pop up; it means I fucked u
 
 
 void errorMallocFailed(char command[]){
-	printf("\t%s - Error %d durante la asignación de memoria:\n%s\n",command,errno,strerror(errno));
+	printf("\t%s - Error %d during memory assignation:\n%s\n",command,errno,strerror(errno));
 }
 
 
@@ -523,7 +523,7 @@ void errorSyscall(char command[]){ //MUST be called after a system call's return
 
 
 void tipFilenameSpaces(){ //can be called if a command that requires a filename or path has too many arguments
-	printf("Verifica que el path no contenga espacios\n");
+	printf("Do verify that the path contains no spaces\n");
 }
 
 
@@ -531,17 +531,17 @@ void tipFilenameSpaces(){ //can be called if a command that requires a filename 
 // * FileList errors
 
 void errorDeleteFL(char command[]){
-	printf("\t%s - Error: La llamada ha sistema ha podido cerrar el archivo pero debido a un error desconocido este no se ha eliminado de la lista interna.\n",command);
+	printf("\t%s - Error: Syscall may have closed the file, but due to an unknown error this could not be eliminated from terminal's internal list\n",command);
 }
 
 
 void errorCloseNotAllowed(char command[]){
-	printf("\t%s - Error: No se permite cerrar procesos con un descriptor de 2 o menor",command);
+	printf("\t%s - Error: Closing process with a FD of 2 or bellow is not allowed",command);
 }
 
 
 void errorNotFoundFL(char command[]){
-	printf("\t%s - Error: No se ha encontrado un archivo abierto con el file descriptor especificado\n",command);
+	printf("\t%s - Error: Could not find an open file with the specified FD\n",command);
 }
 
 
@@ -549,9 +549,9 @@ void errorNotFoundFL(char command[]){
 // * History errors
 
 void historyFullWarning(){
-	printf("Warning: El historial está lleno. \nLa línea de comandos seguirá funcionando, pero no se registrarán más comandos en el historial.\nPara reiniciarlo, introduce 'historic -c'\n\n");
+	printf("Warning: History is full. \nThe terminal will still work, but no more commands will be stored in history.\nTo restart history introduce 'historic -c'\n\n");
 }
 
 void errorHistoricSelfReference(char command[]){
-	printf("\t%s - Error: No se permite la llamada a otro comando historic N\n\tIntroduce 'help %s' para más información",command,command);
+	printf("\t%s - Error: May not call another 'historic N' command with a historic N command\n\tIntroduce 'help %s' for more information",command,command);
 }

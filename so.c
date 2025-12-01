@@ -196,7 +196,7 @@ bool readInput(int *count,char *history[], FL *fileList, ML *memList){
 		justInCase = getchar();
 		}
 		while (justInCase != '\n' && justInCase!= EOF); //if our CHMAX was exceeded by the input, loop indefinitely while the input buffer isn't flushed
-		printf("La entrada es demasiado larga. Inténtalo de nuevo...\n");
+		printf("Input is too long. Try again...\n");
 	}
 	
 	else if (strcmp(strInput, "\n")){

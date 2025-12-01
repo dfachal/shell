@@ -191,7 +191,7 @@ void printNodeML(pML p){
 void printML(ML *list){
 	pML p = NULL;
 	pid_t pid = getpid();
-	printf("Lista de bloques asignados para el proceso %d:\n",pid);
+	printf("List of blocks assigned for the process %d:\n",pid);
 	if(*list != NULL){
 		for(p = *list;p != NULL; p = p -> next){
 			printf("\t");
@@ -204,7 +204,7 @@ void emptyML(ML *list){
 	pML p,q;
 	p = *list;
 	if(p!= NULL){
-		q = p->next;
+		q = p->next;Initialized
 		free(p->mode);
 		free(p->data);
 		free(p);
@@ -280,7 +280,7 @@ void cDeallocate(char *pieces[], int numP, ML *memList){ //return on success || 
 				return;
 			}
 			if(!deleteBySizeML(size,memList)){
-				printf("\tdeallocate - Error: No se ha encontrado ninguna entrada del tamaño especificado");
+				printf("\tdeallocate - Error: Could not find an entry with specified size");
 				return;
 			}
 			else
@@ -412,15 +412,15 @@ void printVars(int *ext1, int *ext1i, int *ext2, int *ext2i, int *ext3, int *ext
 	static int a,b,c;
 	static int ai = 0, bi = 0, ci = 0;
 	auto int d,e,f;
-	printf("Variables locales:\t%p, %p, %p\n", &x, &y, &z);
-	printf("Variables locales inicializadas:\t%p, %p, %p\n", &xi, &yi, &zi);
-	printf("Variables externas:\t%p, %p, %p\n", ext1, ext2, ext3);
-	printf("Variables externas inicializadas:\t%p, %p, %p\n", ext1i, ext2i, ext3i);
-	printf("Variables estáticas:\t%p, %p, %p\n", &a, &b, &c);
-	printf("Variables estáticas inicializadas:\t%p, %p, %p\n", &ai, &bi, &ci);
-	printf("Variables automáticas:\t%p, %p, %p\n", &d, &e, &f);
-	printf("Variables globales:\t%p, %p, %p\n", &global1, &global2, &global3);
-	printf("Variables globales inicializadas:\t%p, %p, %p\n", &global1i, &global2i, &global3i);
+	printf("Local variables:\t%p, %p, %p\n", &x, &y, &z);
+	printf("Initialized local variables:\t%p, %p, %p\n", &xi, &yi, &zi);
+	printf("External variables:\t%p, %p, %p\n", ext1, ext2, ext3);
+	printf("Initialized external variables:\t%p, %p, %p\n", ext1i, ext2i, ext3i);
+	printf("Static variables:\t%p, %p, %p\n", &a, &b, &c);
+	printf("Initialized static variables:\t%p, %p, %p\n", &ai, &bi, &ci);
+	printf("Automatic variables:\t%p, %p, %p\n", &d, &e, &f);
+	printf("Global variables:\t%p, %p, %p\n", &global1, &global2, &global3);
+	printf("Initialized global variables:\t%p, %p, %p\n", &global1i, &global2i, &global3i);
 	printf("\n");
 }
 
@@ -446,8 +446,8 @@ void cMemory(char *pieces[], int numP, ML *memList){
 			return;
 		}
 		if (funcs){
-			printf("Funciones de programa:\t%p, %p, %p\n", cAuthors, cPid, cInfoSys);
-			printf("Funciones de librería:\t%p, %p, %p\n", malloc, printf, strcmp);
+			printf("Program functions:\t%p, %p, %p\n", cAuthors, cPid, cInfoSys);
+			printf("Library functions:\t%p, %p, %p\n", malloc, printf, strcmp);
 			printf("\n");
 		}
 
@@ -478,12 +478,12 @@ void cRecurse(char *pieces[], int numP){
 		errno=0;
 		n = atoi(pieces[1]);
 		if(n == 0 && errno!=0)
-			errorAtoiFailed("recursiva",pieces[1]);
+			errorAtoiFailed("recursive",pieces[1]);
 		else
 			recursiva(n);
 	}
 	else
-		errorUnknownArgument("recursiva");
+		errorUnknownArgument("recursive");
 }
 
 
@@ -674,7 +674,7 @@ void do_pmap (void){ //sin argumentos
 	
 	sprintf (elpid,"%d", (int) getpid());
 	if ((pid=fork())==-1){
-		perror ("Imposible crear proceso");
+		perror ("Couldn't fork process");
 		return;
 		}
 	if (pid==0){
@@ -705,14 +705,14 @@ void do_pmap (void){ //sin argumentos
 // * Base errors
 
 void errorAddressNotValid(char command[], char argument[]){
-	printf("\t%s - Error: %s no es una dirección válida",command,argument);
+	printf("\t%s - Error: %s is not a valid address",command,argument);
 }
 
 void errorSizeNotValid(char command[], char argument[]){
-	printf("\t%s - Error: %s no es un tamaño válido",command,argument);
+	printf("\t%s - Error: %s is not a valid size",command,argument);
 }
 
 
 void errorAddressNotFoundML(char command[], char argument[]){
-	printf("\t%s - Error: La dirección %s no ha sido encontrada en la lista",command,argument);
+	printf("\t%s - Error: Address %s is not on the list",command,argument);
 }

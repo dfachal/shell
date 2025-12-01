@@ -182,7 +182,7 @@ void readDir(char dirName[], bool hid, bool acc, bool lng, bool lnk){
 		errorSyscall("listfile");
 	}
 	else{
-		printf("*DIRECTORIO: %s\n",dirName);
+		printf("*DIRECTORY: %s\n",dirName);
 		fileInfoHeader(acc,lng,lnk); //print header with columns
 		while((entry = readdir(dir)) != NULL){ //iterate through all entries
 			if((strcmp(entry->d_name,".") && strcmp(entry->d_name,"..")) && (hid || entry->d_name[0] != '.')){ //discard . and .. as well as hidden files if necessary
@@ -225,7 +225,7 @@ void readDirRec(char dirName[], bool hid, bool acc, bool lng, bool lnk, bool aft
 		}
 		else{
 			if(!afterAux){
-				printf("*DIRECTORIO: %s\n",dirName);
+				printf("*DIRECTORY: %s\n",dirName);
 				while((entry = readdir(dir)) != NULL){ //iterate through all entries
 					if((strcmp(entry->d_name,".") && strcmp(entry->d_name,"..")) && (hid || entry->d_name[0] != '.')){ //discard . and .. as well as hidden files if necessary
 						relPath = concat(dirName,entry->d_name,&concatCheck);
@@ -316,10 +316,10 @@ bool delRec(char path[]){
 						}
 						else{
 							if (remove(relPath) != -1){
-								printf("Eliminado archivo %s\n",relPath);
+								printf("File deleted %s\n",relPath);
 							}
 							else if(rmdir(relPath) != -1){
-								printf("Eliminado archivo %s\n",relPath);
+								printf("File deleted %s\n",relPath);
 							}
 							else{
 								success = false;
@@ -335,12 +335,12 @@ bool delRec(char path[]){
 		closedir(dir);
 		
 		if(success){
-			printf("Eliminados contenidos de %s\n",path);
+			printf("Deleting contents of %s\n",path);
 			if (remove(path) != -1){
-				printf("Eliminado directorio %s\n",path);
+				printf("Directory deleted %s\n",path);
 			}
 			else if(rmdir(path) != -1){
-				printf("Eliminado directorio %s\n",path);
+				printf("Directory deleted %s\n",path);
 			}
 			else{
 				success = false;
@@ -504,10 +504,10 @@ void cErase (char *pieces[], int numP){
 	else{
 		for(i = 1; i < numP; i++){
 			if (remove(pieces[i]) != -1){
-				printf("Eliminado correctamente %s\n",pieces[i]);
+				printf("Successfully deleted %s\n",pieces[i]);
 			}
 			else if(rmdir(pieces[i]) != -1){
-				printf("Eliminado correctamente %s\n",pieces[i]);
+				printf("Successfully deleted %s\n",pieces[i]);
 			}
 			else{
 				printf("%s",pieces[i]);
@@ -526,7 +526,7 @@ void cDelRec (char *pieces[], int numP){
 	else
 		for(i = 1; i < numP; i++)
 			if(!delRec(pieces[i]))
-				printf("Eliminacion recursiva de %s fallida",pieces[i]);
+				printf("Recursive deletion of %s failed",pieces[i]);
 }
 
 char* getTrashPath(void) { //AUX
@@ -639,11 +639,11 @@ void cCopy (char *pieces[],int numP){
 // * FileSys Errors
 
 void errorFileAlreadyExists(char command[], char fileName[]){
-	printf("\t%s - Error: No se pudo crear el archivo \"%s\":\nEs posible que el archivo ya exista\n",command,fileName);
+	printf("\t%s - Error: Could not creat file \"%s\":\nIt is possible that the file already exists\n",command,fileName);
 }
 
 void errorFileRead(char relPath[]){
-	printf("\tError %d: No se pudo leer \"%s\":\n%s\n",errno,relPath,strerror(errno));
+	printf("\tError %d: Could not read \"%s\":\n%s\n",errno,relPath,strerror(errno));
 }
 
 void errorTrashPath(){
