@@ -40,6 +40,7 @@ void helpRevList();
 void helpErase();
 void helpDelRec();
 void helpTrash();
+void helpFSStats();
 
 // * Memory Help
 void helpAllocate();

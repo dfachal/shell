@@ -335,6 +335,13 @@ void helpTrash(){
 	printf("\t-empty: Empties trash\n\n");
 }
 
+void helpFSStats(){
+	printf("\t|fsstats [-free] [-occ]]\n");
+	printf("Shows mounted file systems statistics\n");
+	printf("\t-free: Shows free space\n\n");
+	printf("\t-occ: Shows occupied space\n\n");
+}
+
 
 // * Memory Help
 
