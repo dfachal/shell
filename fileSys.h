@@ -16,7 +16,9 @@ void cListDir (char *pieces[], int numP);
 void cRecList (char *pieces[], int numP, bool after);
 void cErase (char *pieces[], int numP);
 void cDelRec (char *pieces[], int numP);
-void cWastebin (char *pieces[], int numP);
+char *getTrashPath(void); //AUX
+char *getTrashInfoPath(void); //AUX
+void cTrash (char *pieces[], int numP);
 
 
 
@@ -25,6 +27,7 @@ void cWastebin (char *pieces[], int numP);
 // * FileSys Errors
 void errorFileAlreadyExists(char command[], char fileName[]);
 void errorFileRead(char relPath[]);
+void errorTrashPath();
 
 
 #endif

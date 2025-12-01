@@ -329,10 +329,10 @@ void helpDelRec(){
 	printf("If no file or directory name is provided, prints current working directory\n\n");
 }
 
-void helpWastebin(){
-	printf("\t|wastebin [-empty]\n");
-	printf("Shows or deletes wastebin contents\n");
-	printf("\t-empty: Empties wastebin\n\n");
+void helpTrash(){
+	printf("\t|trash [-empty]\n");
+	printf("Shows or deletes trash contents\n");
+	printf("\t-empty: Empties trash\n\n");
 }
 
 

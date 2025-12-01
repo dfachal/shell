@@ -154,8 +154,8 @@ bool processInput(char *pieces[], int numP, char *history[], FL *fileList,ML *me
 	else if(!strcmp(pieces[0],"delrec")){
 		cDelRec(pieces,numP);
 	}
-	else if(!strcmp(pieces[0],"wastebin")){
-		cWastebin(pieces,numP);
+	else if(!strcmp(pieces[0],"trash")){
+		cTrash(pieces,numP);
 	}
 	
 	//p2 memory

@@ -523,7 +523,78 @@ void cDelRec (char *pieces[], int numP){
 				printf("Eliminacion recursiva de %s fallida",pieces[i]);
 }
 
+char* getTrashPath(void) { //AUX
+	const char *suffix = "/.local/share/Trash/files";
+	const char *home = getenv("HOME");
+	char* path;
+	size_t len;
+	
+	if (!home) {
+		return NULL;	// HOME env variable not set
+	}
+	
+	len = strlen(home) + strlen(suffix) + 1;
 
+	path = malloc(len);
+	if (!path) {
+		return NULL;
+	}
+
+	snprintf(path, len, "%s%s", home, suffix);
+	return path;
+}
+
+char* getTrashInfoPath(void) { //AUX
+	const char *suffix = "/.local/share/Trash/info";
+	const char *home = getenv("HOME");
+	char *path;
+	size_t len;
+	
+	if (!home) {
+		return NULL;	// HOME env variable not set
+	}
+	
+	len = strlen(home) + strlen(suffix) + 1;
+
+	path = malloc(len);
+	if (!path) {
+		return NULL;
+	}
+
+	snprintf(path, len, "%s%s", home, suffix);
+	return path;
+}
+
+void cTrash (char *pieces[], int numP){
+	char* trashPath = getTrashPath();
+	char* trashInfoPath = getTrashInfoPath();
+	
+	//path obtention error
+	if (trashPath == NULL){
+		errorTrashPath();
+		if (trashInfoPath != NULL)
+			free(trashInfoPath);
+		return;
+	}
+	if (trashInfoPath == NULL){
+		errorTrashPath();
+		free(trashPath);
+		return;
+	}
+	if (numP == 1){
+		cListDir((char *[]){ "trash", trashPath}, 2);
+	}
+	else if (numP == 2 && (!strcmp(pieces[1],"-empty"))){
+		delRec(trashPath);
+		delRec(trashInfoPath);
+	}
+	
+	
+	free(trashPath);
+	free(trashInfoPath);
+	
+	return;
+}
 
 	// * * * Errors
 
@@ -537,3 +608,6 @@ void errorFileRead(char relPath[]){
 	printf("\tError %d: No se pudo leer \"%s\":\n%s\n",errno,relPath,strerror(errno));
 }
 
+void errorTrashPath(){
+	printf("\t Error: Trash folder path could not be obtained\n");
+}
