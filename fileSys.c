@@ -12,6 +12,8 @@
 #include <sys/utsname.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <mntent.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <dirent.h>
@@ -594,6 +596,37 @@ void cTrash (char *pieces[], int numP){
 	free(trashInfoPath);
 	
 	return;
+}
+
+void cFSStats (char *pieces[], int numP){
+	int i;
+	bool freeSpace = false;
+	bool occupiedSpace = false;
+	FILE* mount;
+	struct mntent* mountedFS;
+	
+	mount = setmntent("/proc/self/mounts","r");
+	if(numP != 1){
+		errorUnknownArgument("fsstats");
+	}
+	if(mount == NULL){
+		printf("Mount file could not be opened\n");
+		return;
+	}
+	while((mountedFS = getmntent(mount)) != NULL){ //getmntent reads mounts one at a time
+		struct statvfs fsStats; //declared locally within the loop
+		if(statvfs(mountedFS->mnt_dir,&fsStats) == 0){ //ignore filesystems under 8GB
+			if((fsStats.f_blocks * fsStats.f_bsize > 8000000) && fsStats.f_bfree != 0 && (strcmp(mountedFS->mnt_fsname,"tmpfs"))){
+				printf("Mount point: %s\n", mountedFS->mnt_dir);
+				printf("Filesystem: %s\n", mountedFS->mnt_fsname);
+				printf("\tTotal (B): %lu\n", fsStats.f_bsize*fsStats.f_blocks);
+				printf("\tFree (B): %lu\n", fsStats.f_bsize*fsStats.f_bfree);
+				printf("\tAvailable (B): %lu\n--\n", fsStats.f_bavail);
+				printf("\n");
+			}
+		}
+		
+	}
 }
 
 	// * * * Errors
