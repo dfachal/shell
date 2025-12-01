@@ -623,7 +623,6 @@ void cFSStats (char *pieces[], int numP){
 				printf("\n");
 			}
 		}
-		
 	}
 }
 
