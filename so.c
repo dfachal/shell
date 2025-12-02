@@ -160,6 +160,9 @@ bool processInput(char *pieces[], int numP, char *history[], FL *fileList,ML *me
 	else if(!strcmp(pieces[0],"fsstats")){
 		cFSStats(pieces,numP);
 	}
+	else if(!strcmp(pieces[0],"copy")){
+		cCopy(pieces,numP);
+	}
 	
 	//p2 memory
 	else if(!strcmp(pieces[0],"allocate")){

@@ -20,6 +20,7 @@ char *getTrashPath(void); //AUX
 char *getTrashInfoPath(void); //AUX
 void cTrash (char *pieces[], int numP);
 void cFSStats (char *pieces[], int numP);
+void cCopy (char *pieces[], int numP);
 
 
 

@@ -41,6 +41,7 @@ void helpErase();
 void helpDelRec();
 void helpTrash();
 void helpFSStats();
+void helpCopy();
 
 // * Memory Help
 void helpAllocate();

@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/statvfs.h>
+#include <sys/sendfile.h>
 #include <mntent.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -630,8 +631,54 @@ void cFSStats (char *pieces[], int numP){
 	}
 }
 
-void cCopy (char *pieces[],int numP){
+void cCopy (char *pieces[], int numP){
+	int fileDescSource = 0;
+	int fileDescDest = 0;
+	off_t remaining;
+	off_t offset = 0;
+	struct stat statSource;
 	
+	if (numP != 3){
+		errorUnknownArgument("copy");
+		return;
+	}
+	
+	fileDescSource = open(pieces[1], O_APPEND);
+	if (fileDescSource == -1){
+		errorSyscall("copy");
+		return;
+	}
+	fstat(fileDescSource,&statSource);
+	
+	fileDescDest = open(pieces[2], O_APPEND);
+	if(fileDescDest != -1){
+		close(fileDescSource);
+		close(fileDescDest);
+		errorFileAlreadyExists("copy",pieces[2]);
+		return;
+	}
+	fileDescDest = open(pieces[2], O_WRONLY | O_CREAT | O_TRUNC, statSource.st_mode);
+	if(fileDescDest == -1){
+		errorSyscall("copy");
+		close(fileDescSource);
+		return;
+	}
+	//both files are open now
+	
+	
+	remaining = statSource.st_size;
+	
+	while(remaining > 0){
+		ssize_t sent = sendfile(fileDescDest, fileDescSource, &offset, remaining);
+		if(sent < 0){
+			printf("copy - Error: Unknown, copy failed");
+		}
+		remaining -= sent;
+	}
+	
+	close(fileDescSource);
+	close(fileDescDest);
+	return;
 }
 
 	// * * * Errors

@@ -104,6 +104,9 @@ void cHelp(char *pieces[], int numP){
 			
 		else if(!strcmp(pieces[1],"fsstats"))
 			helpFSStats();
+		
+		else if(!strcmp(pieces[1],"copy"))
+			helpCopy();
 			
 		else if(!strcmp(pieces[1],"allocate"))
 			helpAllocate();
@@ -136,7 +139,8 @@ void printHelp(){
 	"authors","pid","ppid","cd","date",
 	"historic","open","close","dup","infoSys",
 	"makefile","makedir","listfile","cwd","listdir",
-	"ls","reclist","revlist","erase","delrec","trash","fsstats",
+	"ls","reclist","revlist","erase","delrec","trash",
+	"fsstats","copy"
 	//memory
 	"allocate","deallocate","memfill","memdump","memory",
 	"recurse",
@@ -344,7 +348,12 @@ void helpTrash(){
 
 void helpFSStats(){
 	printf("\t|fsstats\n");
-	printf("Shows mounted file systems statistics, including free and occupied space (in bytes)\n");
+	printf("Shows mounted file systems statistics, including free and occupied space (in bytes)\n\n");
+}
+
+void helpCopy(){
+	printf("\t|copy [file1] [file2]\n");
+	printf("\tCopies 'file1' creating 'file2' with the same contents\n\n");
 }
 
 
