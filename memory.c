@@ -204,7 +204,7 @@ void emptyML(ML *list){
 	pML p,q;
 	p = *list;
 	if(p!= NULL){
-		q = p->next;Initialized
+		q = p->next;
 		free(p->mode);
 		free(p->data);
 		free(p);
